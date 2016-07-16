@@ -1,0 +1,21 @@
+#!/bin/sh
+
+CATEGORIES="buildings food nature people technology objects"
+DESTDIR=~/Pictures/unsplash
+RESOLUTION=$(system_profiler SPDisplaysDataType | grep Resolution | sed 's/[^x0-9]//g')
+
+for CATEGORY in ${CATEGORIES}; do
+    URL=https://source.unsplash.com/category/${CATEGORY}/${RESOLUTION}/daily
+    IMAGE=$(curl --silent --fail --location --write-out "%{url_effective}" --output /dev/null --url ${URL})
+    NAME=${IMAGE##*/}
+    NAME=${NAME%%\?*}
+    FORMAT=${IMAGE##*fm=}
+    FORMAT=${FORMAT%%&*}
+    OUTPUT=${DESTDIR}/${NAME}.${FORMAT}
+    echo "Downloading ${URL} to ${OUTPUT}"
+    if [[ ! -f ${OUTPUT} ]]; then
+        curl -# --fail --create-dirs --output ${OUTPUT} --url ${IMAGE}
+    else
+        echo "Already downloaded"
+    fi
+done
